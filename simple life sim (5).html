@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Neuron Simulation</title>
+	<style>
+		canvas {
+			border: 1px solid black;
+		}
+	</style>
+</head>
+<body>
+	<canvas></canvas>
+	<script>
+		class Neuron {
+			constructor(x, y, size, color) {
+				this.x = x;
+				this.y = y;
+				this.size = size;
+				this.color = color;
+				this.connections = [];
+			}
+
+			draw(ctx) {
+				ctx.beginPath();
+				ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
+				ctx.fillStyle = this.color;
+				ctx.fill();
+				ctx.closePath();
+			}
+
+			move() {
+				this.x += Math.random() * 4 - 2;
+				this.y += Math.random() * 4 - 2;
+			}
+		}
+
+		const canvas = document.querySelector('canvas');
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+		const ctx = canvas.getContext('2d');
+		const neurons = [];
+
+		// Create initial neurons
+		for (let i = 0; i < 650; i++) {
+			const x = Math.random() * canvas.width;
+			const y = Math.random() * canvas.height;
+			const size = 10;
+			const color = 'blue';
+			const neuron = new Neuron(x, y, size, color);
+			neurons.push(neuron);
+		}
+
+		// Main loop
+		function loop() {
+			// Clear canvas
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+			// Move and draw neurons
+			neurons.forEach(neuron => {
+				neuron.move();
+				neuron.draw(ctx);
+			});
+
+			// Connect neurons that are close enough
+			for (let i = 0; i < neurons.length; i++) {
+				for (let j = i + 1; j < neurons.length; j++) {
+					const dx = neurons[i].x - neurons[j].x;
+					const dy = neurons[i].y - neurons[j].y;
+					const distance = Math.sqrt(dx * dx + dy * dy);
+					if (distance < 70) {
+						neurons[i].connections.push(neurons[j]);
+						neurons[j].connections.push(neurons[i]);
+
+						ctx.beginPath();
+						ctx.moveTo(neurons[i].x, neurons[i].y);
+						ctx.lineTo(neurons[j].x, neurons[j].y);
+						ctx.strokeStyle = 'black';
+						ctx.stroke();
+						ctx.closePath();
+					}
+				}
+			}
+
+			// Schedule next frame
+			window.requestAnimationFrame(loop);
+		}
+
+		// Start animation
+		loop();
+	</script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Silver Mold Growth Simulation</title>
+    <style>
+        canvas {
+            display: block;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+<canvas id="myCanvas" width="800" height="800"></canvas>
+<script>
+    const canvas = document.getElementById('myCanvas');
+    const ctx = canvas.getContext('2d');
+    const cellSize = 5;
+    const rows = canvas.height / cellSize;
+    const cols = canvas.width / cellSize;
+
+    function createEmptyGrid() {
+        return new Array(rows).fill(null).map(() => new Array(cols).fill(0));
+    }
+
+    function randomizeGrid(grid) {
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                grid[row][col] = Math.random() < 0.07 ? 1 : 0;
+            }
+        }
+    }
+
+    function countNeighbors(grid, row, col) {
+        let count = 0;
+        for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+                if (dx === 0 && dy === 0) continue;
+                const newRow = (row + dx + rows) % rows;
+                const newCol = (col + dy + cols) % cols;
+                if (grid[newRow][newCol] === 1) count++;
+            }
+        }
+        return count;
+    }
+
+    function updateGrid(grid) {
+        const newGrid = grid.map(row => row.slice());
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                const neighbors = countNeighbors(grid, row, col);
+
+                if (grid[row][col] === 1) {
+                    newGrid[row][col] = neighbors === 1 || neighbors === 2 ? 1 : 0;
+                } else {
+                    newGrid[row][col] = neighbors === 1 ? 1 : 0;
+                }
+            }
+        }
+        return newGrid;
+    }
+
+    function drawGrid(grid) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                if (grid[row][col] === 1) {
+                    ctx.fillStyle = '#C0C0C0';
+                    ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+                }
+            }
+        }
+    }
+
+    let grid = createEmptyGrid();
+    randomizeGrid(grid);
+
+    setInterval(() => {
+        grid = updateGrid(grid);
+        drawGrid(grid);
+    }, 100);
+</script>
+</body>
+</html>

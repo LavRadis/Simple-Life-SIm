@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Mold Simulator</title>
+    <style>
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+    <script>
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      
+      class MoldCell {
+        constructor(x, y, size, growthRate) {
+          this.x = x;
+          this.y = y;
+          this.size = size;
+          this.growthRate = growthRate;
+        }
+        
+        draw() {
+          ctx.fillStyle = '#5D6D7E';
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.closePath();
+          ctx.fill();
+        }
+        
+        grow() {
+          this.size += this.growthRate;
+        }
+      }
+      
+      class RedCell {
+        constructor(x, y, size) {
+          this.x = x;
+          this.y = y;
+          this.size = size;
+          this.speed = 2;
+        }
+        
+        draw() {
+          // Draw bug shape
+          ctx.fillStyle = '#FF5733';
+          ctx.beginPath();
+          ctx.moveTo(this.x - this.size / 2, this.y);
+          ctx.lineTo(this.x + this.size / 2, this.y - this.size / 2);
+          ctx.lineTo(this.x + this.size / 4, this.y - this.size / 2);
+          ctx.lineTo(this.x, this.y - this.size);
+          ctx.lineTo(this.x - this.size / 4, this.y - this.size / 2);
+          ctx.lineTo(this.x - this.size / 2, this.y - this.size / 2);
+          ctx.closePath();
+          ctx.fill();
+          
+          // Draw eyes
+          ctx.fillStyle = '#FFFFFF';
+          ctx.beginPath();
+          ctx.arc(this.x - this.size / 4, this.y - this.size / 2, this.size / 6, 0, Math.PI * 2);
+          ctx.arc(this.x + this.size / 4, this.y - this.size / 2, this.size / 6, 0, Math.PI * 2);
+          ctx.closePath();
+          ctx.fill();
+          
+          // Draw pupils
+          ctx.fillStyle = '#000000';
+          ctx.beginPath();
+          ctx.arc(this.x - this.size / 4, this.y - this.size / 2, this.size / 12, 0, Math.PI * 2);
+          ctx.arc(this.x + this.size / 4, this.y - this.size / 2, this.size / 12, 0, Math.PI * 2);
+          ctx.closePath();
+          ctx.fill();
+        }
+        
+        move() {
+          // Move in random direction
+          const angle = Math.random() * Math.PI * 2;
+          this.x += Math.cos(angle) * this.speed;
+          this.y += Math.sin(angle) * this.speed;
+          
+          // Wrap around edges of screen
+          if (this.x < -this.size) {
+            this.x = canvas.width + this.size;
+          } else if (this.x > canvas.width + this.size) {
+            this.x = -this.size;
+          }
+          if (this.y < -this.size) {
+            this.y = canvas.height + this.size;
+          } else if (this.y > canvas.height + this.size) {
+            this.y =         -this.size;
+      }
+    }
+    
+    eat(moldCells) {
+      // Check if touching any mold cells
+      for (let i = 0; i < moldCells.length; i++) {
+        const dx = moldCells[i].x - this.x;
+        const dy = moldCells[i].y - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance < this.size + moldCells[i].size) {
+          // Eat mold cell
+          moldCells.splice(i, 1);
+          // Grow larger
+          this.size += 1;
+          break;
+        }
+      }
+    }
+  }
+  
+  // Create initial mold cells
+  const moldCells = [];
+  const numMoldCells = 500;
+  for (let i = 0; i < numMoldCells; i++) {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height;
+    const size = Math.random() * 5 + 2;
+    const growthRate = Math.random() * 0.1 + 0.05;
+    moldCells.push(new MoldCell(x, y, size, growthRate));
+  }
+  
+  // Create red cell
+  const redCell = new RedCell(canvas.width / 2, canvas.height / 2, 20);
+  
+  function animate() {
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw and grow mold cells
+    for (let i = 0; i < moldCells.length; i++) {
+      moldCells[i].draw();
+      moldCells[i].grow();
+    }
+    
+    // Move and draw red cell
+    redCell.move();
+    redCell.draw();
+    
+    // Eat mold cells
+    redCell.eat(moldCells);
+    
+    // Regrow mold cells
+    if (Math.random() < 0.05) {
+      const x = Math.random() * canvas.width;
+      const y = Math.random() * canvas.height;
+      const size = Math.random() * 5 + 2;
+      const growthRate = Math.random() * 0.1 + 0.05;
+      moldCells.push(new MoldCell(x, y, size, growthRate));
+    }
+    
+    // Call animate function again
+    requestAnimationFrame(animate);
+  }
+  
+  animate();
+</script>
+  </body>
+</html>

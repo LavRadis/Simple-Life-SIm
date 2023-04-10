@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Organic Conway's Game of Life</title>
+    <style>
+        canvas {
+            display: block;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+<canvas id="game" width="1000" height="1000"></canvas>
+<script>
+    function getRandomArbitrary(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+
+    function genPoints(r, n) {
+        const points = [];
+        for (let i = 0; i < n; i++) {
+            const theta = 2 * Math.PI * i / n;
+            const rad = r * (1 + 0.3 * Math.random());
+            points.push({
+                x: rad * Math.cos(theta),
+                y: rad * Math.sin(theta),
+            });
+        }
+        return points;
+    }
+
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const cellSize = 10;
+    const rows = canvas.height / cellSize;
+    const cols = canvas.width / cellSize;
+    const colors = {
+      1: 'rgb(31, 119, 53)',
+      2: 'rgb(255, 197, 0)'
+    };
+
+    function createEmptyBoard() {
+        return new Array(rows).fill(null).map(() => new Array(cols).fill(0));
+    }
+
+    function randomizeBoard(board) {
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                board[row][col] = Math.floor(Math.random() * 3);
+            }
+        }
+    }
+
+    function cloneBoard(board) {
+        return board.map((row) => row.slice(0));
+    }
+
+    function countNeighbors(board, row, col) {
+        let neighbors = [0, 0, 0];
+        for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+                if (dx === 0 && dy === 0) continue;
+                const newRow = (row + dx + rows) % rows;
+                const newCol = (col + dy + cols) % cols;
+                neighbors[board[newRow][newCol]]++;
+            }
+        }
+        return neighbors;
+    }
+
+    function updateBoard(board) {
+        const newBoard = cloneBoard(board);
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                const neighbors = countNeighbors(board, row, col);
+                const isAlive = board[row][col] !== 0;
+                const totalNeighbors = neighbors[1] + neighbors[2];
+
+                if (isAlive) {
+                    if (totalNeighbors < 2 || totalNeighbors > 3) {
+                        newBoard[row][col] = 0;
+                    }
+                } else {
+                    if (totalNeighbors === 3) {
+                        newBoard[row][col] = neighbors[1] > neighbors[2] ? 1 : 2;
+                    }
+                }
+            }
+        }
+        return newBoard;
+    }
+
+    function drawBoard(board) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                const cellValue = board[row][col];
+                if (cellValue) {
+                    const centerX = col * cellSize + cellSize / 2;
+                    const centerY = row * cellSize + cellSize / 2;
+
+                    const points = genPoints(cellSize / 2, 6);
+
+                    ctx.beginPath();
+                    ctx.moveTo(centerX + points[0].x, centerY + points[0].y);
+                    points.forEach(p => ctx.lineTo(centerX + p.x, centerY + p.y));
+                    ctx.closePath();
+
+                    ctx.fillStyle = colors[cellValue];
+                    ctx.fill();
+                }
+            }
+        }
+    }
+
+    let board = createEmptyBoard();
+    randomizeBoard(board);
+
+    setInterval(() => {
+        board = updateBoard(board);
+        drawBoard(board);
+    }, 200);
+</script>
+</body>
+</html>

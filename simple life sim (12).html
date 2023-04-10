@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Extended Conway's Game of Life</title>
+    <style>
+        canvas {
+            display: block;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+<canvas id="game" width="1000" height="1000"></canvas>
+<script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const cellSize = 10;
+    const rows = canvas.height / cellSize;
+    const cols = canvas.width / cellSize;
+    const colors = {
+        1: 'blue',
+        2: 'green',
+        3: 'red'
+    };
+
+    function createEmptyBoard() {
+        return new Array(rows).fill(null).map(() => new Array(cols).fill(0));
+    }
+
+    function randomizeBoard(board) {
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                board[row][col] = Math.floor(Math.random() * 4);
+            }
+        }
+    }
+
+    function cloneBoard(board) {
+        return board.map((row) => row.slice(0));
+    }
+
+    function countNeighborsOfType(board, row, col, type) {
+        let count = 0;
+        for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+                if (dx === 0 && dy === 0) continue;
+                const newRow = (row + dx + rows) % rows;
+                const newCol = (col + dy + cols) % cols;
+                if (board[newRow][newCol] === type) count++;
+            }
+        }
+        return count;
+    }
+
+    function updateBoard(board) {
+        const newBoard = cloneBoard(board);
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                const currentValue = board[row][col];
+                const totalAliveNeighbors = countNeighborsOfType(board, row, col, 1) + countNeighborsOfType(board, row, col, 2) + countNeighborsOfType(board, row, col, 3);
+
+                if (currentValue !== 0) {
+                    if (totalAliveNeighbors < 2 || totalAliveNeighbors > 3) {
+                        newBoard[row][col] = 0;
+                    }
+                } else {
+                    if (totalAliveNeighbors === 3) {
+                        newBoard[row][col] = (countNeighborsOfType(board, row, col, 1) > countNeighborsOfType(board, row, col, 2)) ? 1 : 2;
+                    } else if (totalAliveNeighbors === 4) {
+                        newBoard[row][col] = 3;
+                    }
+                }
+            }
+        }
+        return newBoard;
+    }
+
+    function drawBoard(board) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                const cellValue = board[row][col];
+                if (cellValue) {
+                    ctx.fillStyle = colors[cellValue];
+                    ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+                }
+            }
+        }
+    }
+
+    let board = createEmptyBoard();
+    randomizeBoard(board);
+
+    setInterval(() => {
+        board = updateBoard(board);
+        drawBoard(board);
+    }, 200);
+</script>
+</body>
+</html>

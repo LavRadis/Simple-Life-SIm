@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body, canvas {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <title>Organic Mold Growth Simulation</title>
+</head>
+<body>
+<canvas id="myCanvas"></canvas>
+<script>
+    const canvas = document.getElementById('myCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const cellSize = 5;
+    const rows = Math.floor(canvas.height / cellSize);
+    const cols = Math.floor(canvas.width / cellSize);
+
+    function createEmptyGrid() {
+        return new Array(rows).fill(null).map(() => new Array(cols).fill(0));
+    }
+
+    function placeInitialMold(grid) {
+        const row = Math.floor(rows / 2);
+        const col = Math.floor(cols / 2);
+        grid[row][col] = 1;
+    }
+
+    function countNeighbors(grid, row, col) {
+        let count = 0;
+        for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+                if (dx === 0 && dy === 0) continue;
+                const newRow = Math.max(0, Math.min(rows - 1, row + dx));
+                const newCol = Math.max(0, Math.min(cols - 1, col + dy));
+                if (grid[newRow][newCol] === 1) count++;
+            }
+        }
+        return count;
+    }
+
+    function updateGrid(grid) {
+        const newGrid = grid.map(row => row.slice());
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                const neighbors = countNeighbors(grid, row, col);
+                const randomThreshold = Math.random();
+                const growth = neighbors * 0.25;
+                if (neighbors < 2 && grid[row][col] !== 1) {
+                    if (randomThreshold < growth) {
+                        newGrid[row][col] = 1;
+                    }
+                }
+            }
+        }
+        return newGrid;
+    }
+
+    function drawGrid(grid) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#C0C0C0';
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                if (grid[row][col] === 1) {
+                    ctx.beginPath();
+                    ctx.arc(col * cellSize + cellSize / 2, row * cellSize + cellSize / 2, cellSize / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+    }
+
+    let grid = createEmptyGrid();
+    placeInitialMold(grid);
+
+    setInterval(() => {
+        grid = updateGrid(grid);
+        drawGrid(grid);
+    }, 200);
+</script>
+</body>
+</html>

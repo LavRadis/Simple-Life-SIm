@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Slime Mold Simulator</title>
+	<style>
+		body {
+			margin: 0;
+			overflow: hidden;
+		}
+		canvas {
+			display: block;
+		}
+	</style>
+</head>
+<body>
+	<canvas></canvas>
+
+	<script>
+		const canvas = document.querySelector('canvas');
+		const context = canvas.getContext('2d');
+		const width = canvas.width = window.innerWidth;
+		const height = canvas.height = window.innerHeight;
+
+		const cells = [];
+		const connections = [];
+		const maxSpeed = 2;
+		const maxCells = 500;
+
+		// Create initial cells
+		for (let i = 0; i < maxCells; i++) {
+			const cell = {
+				x: Math.random() * width,
+				y: Math.random() * height,
+				speed: Math.random() * maxSpeed,
+				size: Math.random() * 20 + 10,
+				color: '#FFBF00'
+			};
+			cells.push(cell);
+		}
+
+		// Draw cells and connections
+		function draw() {
+			context.clearRect(0, 0, width, height);
+
+			for (let i = 0; i < cells.length; i++) {
+				const cell = cells[i];
+
+				// Move cell
+				cell.x += (Math.random() - 0.5) * cell.speed;
+				cell.y += (Math.random() - 0.5) * cell.speed;
+
+				// Keep cell inside canvas bounds
+				if (cell.x < 0) cell.x = width;
+				if (cell.x > width) cell.x = 0;
+				if (cell.y < 0) cell.y = height;
+				if (cell.y > height) cell.y = 0;
+
+				// Draw cell
+				context.fillStyle = cell.color;
+				context.beginPath();
+				context.arc(cell.x, cell.y, cell.size, 0, Math.PI * 2);
+				context.fill();
+
+				// Check if cell is touching another cell
+				for (let j = i + 1; j < cells.length; j++) {
+					const other = cells[j];
+					const distance = Math.sqrt((cell.x - other.x) ** 2 + (cell.y - other.y) ** 2);
+
+					if (distance < cell.size + other.size) {
+						// Shrink cells
+						cell.size = cell.size * 2 / 3;
+						other.size = other.size * 2 / 3;
+
+						// Change color
+						cell.color = '#ADD8E6';
+						other.color = '#ADD8E6';
+
+						// Connect cells
+						connections.push({x1: cell.x, y1: cell.y, x2: other.x, y2: other.y});
+					}
+				}
+			}
+
+			// Draw connections
+			context.strokeStyle = '#FFFF00';
+			context.lineWidth = 2;
+			context.beginPath();
+			for (let i = 0; i < connections.length; i++) {
+				const connection = connections[i];
+				context.moveTo(connection.x1, connection.y1);
+				context.lineTo(connection.x2, connection.y2);
+			}
+			context.stroke();
+
+			requestAnimationFrame(draw);
+		}
+
+		draw();
+	</script>
+</body>
+</html>

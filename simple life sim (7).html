@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Slime Mold Simulation</title>
+    <style>
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas></canvas>
+    <script>
+      const canvas = document.querySelector('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      
+      class SlimeMoldCell {
+        constructor(x, y, size, growthRate) {
+          this.x = x;
+          this.y = y;
+          this.size = size;
+          this.growthRate = growthRate;
+          this.direction = Math.random() * 2 * Math.PI;
+        }
+        
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
+          ctx.fillStyle = 'rgb(215, 255, 182)';
+          ctx.fill();
+        }
+        
+        grow() {
+          this.size += this.growthRate;
+        }
+        
+        move() {
+          this.x += Math.cos(this.direction);
+          this.y += Math.sin(this.direction);
+          
+          // Bounce off walls
+          if (this.x < 0 || this.x > canvas.width) {
+            this.direction = Math.PI - this.direction;
+          }
+          if (this.y < 0 || this.y > canvas.height) {
+            this.direction = -this.direction;
+          }
+        }
+        
+        spawn() {
+          if (Math.random() < 0.01) {
+            const newX = this.x + 20 * Math.cos(this.direction);
+            const newY = this.y + 20 * Math.sin(this.direction);
+            const newSize = Math.random() * 5 + 2;
+            const newGrowthRate = Math.random() * 0.1 + 0.05;
+            const newCell = new SlimeMoldCell(newX, newY, newSize, newGrowthRate);
+            cells.push(newCell);
+          }
+        }
+      }
+      
+      // Create initial slime mold cells
+      const cells = [];
+      const numCells = 200;
+      for (let i = 0; i < numCells; i++) {
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+        const size = Math.random() * 10 + 5;
+        const growthRate = Math.random() * 0.5 + 0.1;
+        cells.push(new SlimeMoldCell(x, y, size, growthRate));
+      }
+      
+      function animate() {
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Update and draw cells
+    for (let i = 0; i < cells.length; i++) {
+      const cell = cells[i];
+      cell.move();
+      cell.spawn();
+      cell.draw();
+      cell.grow();
+    }
+    
+    // Request next frame
+    requestAnimationFrame(animate);
+  }
+  
+  animate();
+</script>
+  </body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Neuron Simulation</title>
+	<style>
+		canvas {
+			border: 1px solid black;
+		}
+	</style>
+</head>
+<body>
+	<canvas></canvas>
+	<script>
+		class Neuron {
+			constructor(x, y, size, color) {
+				this.x = x;
+				this.y = y;
+				this.size = size;
+				this.color = color;
+				this.connections = [];
+				this.noiseOffsetX = Math.random() * 1000;
+				this.noiseOffsetY = Math.random() * 1000;
+			}
+
+			draw(ctx) {
+				const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
+				gradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+				gradient.addColorStop(0.6, this.color);
+				gradient.addColorStop(1, 'rgba(0, 0, 0, 0.2)');
+				ctx.fillStyle = gradient;
+				ctx.beginPath();
+				ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
+				ctx.fill();
+				ctx.closePath();
+			}
+
+			move() {
+				this.x += (Math.random() * 2 - 1) * 2;
+				this.y += (Math.random() * 2 - 1) * 2;
+				this.x += Math.sin(this.noiseOffsetX) * 2;
+				this.y += Math.sin(this.noiseOffsetY) * 2;
+				this.noiseOffsetX += 0.1;
+				this.noiseOffsetY += 0.1;
+			}
+		}
+
+		const canvas = document.querySelector('canvas');
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+		const ctx = canvas.getContext('2d');
+		const neurons = [];
+
+		// Create initial neurons
+		for (let i = 0; i < 100; i++) {
+			const x = Math.random() * canvas.width;
+			const y = Math.random() * canvas.height;
+			const size = 10 + Math.random() * 20;
+			const color = `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 1)`;
+			const neuron = new Neuron(x, y, size, color);
+			neurons.push(neuron);
+		}
+
+		// Main loop
+		function loop() {
+			// Clear canvas
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+			// Move and draw neurons
+			neurons.forEach(neuron => {
+				neuron.move();
+				neuron.draw(ctx);
+			});
+
+			// Connect neurons that are close enough
+			for (let i = 0; i < neurons.length; i++) {
+				for (let j = i + 1; j < neurons.length; j++) {
+					const dx = neurons[i].x - neurons[j].x;
+					const dy = neurons[i].y - neurons[j].y;
+					const distance = Math.sqrt(dx * dx + dy * dy);
+					if (distance < 180) {
+						neurons[i].connections.push(neurons[j]);
+						neurons[j].connections.push(neurons[i]);
+
+						const gradient = ctx.createLinearGradient(neurons[i].x, neurons[i].y, neurons[j].x,neurons[j].y);
+gradient.addColorStop(0, neurons[i].color);
+gradient.addColorStop(1, neurons[j].color);
+
+					ctx.beginPath();
+					ctx.moveTo(neurons[i].x, neurons[i].y);
+					ctx.lineTo(neurons[j].x, neurons[j].y);
+					ctx.strokeStyle = gradient;
+					ctx.lineWidth = 2;
+					ctx.stroke();
+					ctx.closePath();
+				}
+			}
+		}
+
+		// Schedule next frame
+		requestAnimationFrame(loop);
+	}
+
+	// Start the simulation
+	loop();
+</script>
+</body>
+</html>

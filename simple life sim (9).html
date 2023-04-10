@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Slime Mold Simulation</title>
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			overflow: hidden;
+		}
+
+		canvas {
+			background-color: black;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="canvas"></canvas>
+
+	<script>
+		const canvas = document.getElementById("canvas");
+		const ctx = canvas.getContext("2d");
+
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight;
+
+		class SlimeMold {
+			constructor(x, y) {
+				this.x = x;
+				this.y = y;
+				this.vx = (Math.random() - 0.5) * 4;
+				this.vy = (Math.random() - 0.5) * 4;
+				this.radius = 10;
+				this.color = "#ffff00";
+				this.connections = [];
+			}
+
+			update() {
+				this.x += this.vx;
+				this.y += this.vy;
+
+				if (this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) {
+					this.vx = -this.vx;
+				}
+
+				if (this.y - this.radius <= 0 || this.y + this.radius >= canvas.height) {
+					this.vy = -this.vy;
+				}
+
+				for (let i = 0; i < slimeMolds.length; i++) {
+					const other = slimeMolds[i];
+					if (other === this) continue;
+					const distance = Math.sqrt((this.x - other.x) ** 2 + (this.y - other.y) ** 2);
+
+					if (distance < this.radius + other.radius && !this.connections.includes(other)) {
+						this.connections.push(other);
+						other.connections.push(this);
+
+						if (this.connections.length === 3) {
+							this.color = "#ff0000";
+							this.connections.forEach(slimeMold => slimeMold.color = "#ff0000");
+						}
+
+						if (other.connections.length === 3) {
+							other.color = "#ff0000";
+							other.connections.forEach(slimeMold => slimeMold.color = "#ff0000");
+						}
+					}
+				}
+
+				this.draw();
+			}
+
+			draw() {
+				ctx.beginPath();
+				ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+				ctx.fillStyle = this.color;
+				ctx.fill();
+
+				for (let i = 0; i < this.connections.length; i++) {
+					ctx.beginPath();
+					ctx.moveTo(this.x, this.y);
+					ctx.lineTo(this.connections[i].x, this.connections[i].y);
+					ctx.strokeStyle = "#ffff00";
+					ctx.lineWidth = 1;
+					ctx.stroke();
+				}
+			}
+		}
+
+		const slimeMolds = [];
+
+		for (let i = 0; i < 50; i++) {
+			const x = Math.random() * canvas.width;
+			const y = Math.random() * canvas.height;
+			slimeMolds.push(new SlimeMold(x, y));
+		}
+
+		function animate() {
+			requestAnimationFrame(animate);
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			slimeMolds.forEach(slimeMold => slimeMold.update());
+		}
+
+		animate();
+	</script>
+</body>
+</html>

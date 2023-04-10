@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Mold Growth Simulator</title>
+    <style>
+      html, body, canvas {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+    <script>
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      let moldCells = [];
+      let time = 0;
+      
+      // Set up canvas
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      
+      // Define MoldCell class
+      class MoldCell {
+        constructor(x, y, size, growthRate) {
+          this.x = x;
+          this.y = y;
+          this.size = size;
+          this.growthRate = growthRate;
+          this.color = 'rgb(0, ' + Math.floor(255 - (this.size * 20)) + ', 0)';
+        }
+        
+        grow() {
+          this.size += this.growthRate;
+          this.color = 'rgb(0, ' + Math.floor(255 - (this.size * 20)) + ', 0)';
+        }
+        
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
+          ctx.fillStyle = this.color;
+          ctx.fill();
+        }
+      }
+      
+      // Create initial mold cells
+      for (let i = 0; i < 5000; i++) {
+        const x = Math.floor(Math.random() * canvas.width);
+        const y = Math.floor(Math.random() * canvas.height);
+        const size = Math.random() * 5 + 5;
+        const growthRate = Math.random() * 0.01 + 0.01;
+        moldCells.push(new MoldCell(x, y, size, growthRate));
+      }
+      
+      // Animation loop
+      function animate() {
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Update and draw mold cells
+        for (const moldCell of moldCells) {
+          moldCell.grow();
+          moldCell.draw();
+        }
+        
+        // Increase time
+        time += 1;
+        
+        // Add new mold cells
+        if (time % 100 === 0) {
+          for (let i = 0; i < 10; i++) {
+            const x = Math.floor(Math.random() * canvas.width);
+            const y = Math.floor(Math.random() * canvas.height);
+            const size = Math.random() * 5 + 5;
+            const growthRate = Math.random() * 0.01 + 0.01;
+            moldCells.push(new MoldCell(x, y, size, growthRate));
+          }
+        }
+        
+        // Request next animation frame
+        requestAnimationFrame(animate);
+      }
+      
+      // Start animation loop
+      animate();
+    </script>
+  </body>
+</html>

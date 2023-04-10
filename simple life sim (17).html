@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Game of Life with Two Cell Types</title>
+  <style>
+    canvas {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <script>
+    var canvas = document.getElementById("canvas");
+    var ctx = canvas.getContext("2d");
+
+    // Set canvas dimensions and cell size
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    var cellSize = 10;
+    var width = canvas.width / cellSize;
+    var height = canvas.height / cellSize;
+
+    // Create cells with two different types
+    var cells = [];
+    for (var i = 0; i < width; i++) {
+      cells[i] = [];
+      for (var j = 0; j < height; j++) {
+        if (Math.random() < 0.5) {
+          cells[i][j] = {type: 0, age: 0};
+        } else {
+          cells[i][j] = {type: 1, age: 0};
+        }
+      }
+    }
+
+    // Update cells every 250 milliseconds
+    setInterval(function() {
+      updateCells();
+      drawCells();
+    }, 1000);
+
+    // Determine the next state of each cell based on its neighbors
+    function updateCells() {
+      for (var i = 0; i < width; i++) {
+        for (var j = 0; j < height; j++) {
+          var neighbors = countNeighbors(i, j);
+          if (cells[i][j].type === 0) {
+            if (neighbors === 3) {
+              cells[i][j].type = 1;
+              cells[i][j].age = 0;
+            }
+          } else {
+            if (neighbors < 2 || neighbors > 3) {
+              cells[i][j].type = 0;
+              cells[i][j].age = 0;
+            } else {
+              cells[i][j].age++;
+              if (cells[i][j].age >= 5) {
+                cells[i][j].type = 0;
+                cells[i][j].age = 0;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Count the number of live neighbor cells for a given cell
+    function countNeighbors(x, y) {
+      var count = 0;
+      for (var i = -1; i <= 1; i++) {
+        for (var j = -1; j <= 1; j++) {
+          if (i === 0 && j === 0) continue;
+          if (x + i < 0 || x + i >= width) continue;
+          if (y + j < 0 || y + j >= height) continue;
+          if (cells[x + i][y + j].type === 1) {
+            count++;
+          }
+        }
+      }
+      return count;
+    }
+
+    // Draw cells on the canvas
+    function drawCells() {
+      for (var i = 0; i < width; i++) {
+        for (var j = 0; j < height; j++) {
+          if (cells[i][j].type === 0) {
+            ctx.fillStyle = "#ffffff";
+            ctx.strokeStyle = "#000000";
+            ctx.beginPath();
+            ctx.arc(i * cellSize + cellSize / 2, j * cellSize + cellSize / 2, cellSize / 2, 0, 2 * Math.PI);
+ctx.fill();
+ctx.stroke();
+} else {
+ctx.fillStyle = "#ff0000";
+ctx.strokeStyle = "#000000";
+ctx.beginPath();
+ctx.rect(i * cellSize, j * cellSize, cellSize, cellSize);
+ctx.fill();
+ctx.stroke();
+}
+}
+}
+}
+</script>
+
+</body>
+</html>
